@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root { height: 100%; }
+  html { background: #0A0B0D; color-scheme: dark; -webkit-text-size-adjust: 100%; }
+  body {
+    @apply bg-bg text-text font-sans text-body antialiased;
+    font-variant-numeric: tabular-nums;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+    margin: 0;
+  }
+  button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  input, textarea { font-variant-numeric: tabular-nums; }
+  input[type='date'] { -webkit-appearance: none; appearance: none; }
+  :focus-visible { outline: 2px solid #8EA6FF; outline-offset: 2px; }
+}
+
+@layer components {
+  .card { @apply bg-card border border-line rounded-card p-4; }
+  .label { @apply block text-cap text-muted mb-1.5; }
+  .input {
+    @apply block w-full min-h-[50px] bg-field border border-field-line rounded-field px-3.5 text-[17px] text-text placeholder:text-muted/70;
+  }
+  .input:focus { @apply border-accent outline-none; }
+  .btn { @apply min-h-[54px] w-full rounded-btn text-[16px] font-semibold px-4 active:opacity-80 disabled:opacity-40; }
+  .btn-primary { @apply btn bg-accent text-on-accent; }
+  .btn-secondary { @apply btn bg-card border border-line text-text; }
+  .btn-danger { @apply btn bg-down/15 text-down; }
+  .chip { @apply min-h-[44px] px-4 rounded-full border border-field-line text-text2 text-body font-medium active:opacity-70; }
+  .chip-on { @apply border-accent text-accent bg-accent/10; }
+  .link { @apply min-h-[44px] px-1 text-accent text-cap font-medium active:opacity-70; }
+  .badge { @apply inline-flex items-center rounded-full px-2.5 py-1 text-tiny font-medium whitespace-nowrap; }
+  .badge-neutral { @apply badge bg-white/[0.06] text-text2; }
+  .badge-up { @apply badge bg-up/[0.14] text-up; }
+  .badge-down { @apply badge bg-down/[0.14] text-down; }
+  .section { @apply text-cap text-muted font-medium mt-6 mb-2.5 px-1; }
+}
+
+@keyframes sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes toast-in { from { opacity: 0; transform: translate(-50%, -8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+.anim-sheet { animation: sheet-up 0.26s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.anim-fade { animation: fade-in 0.2s ease-out; }
+.anim-toast { animation: toast-in 0.2s ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .anim-sheet, .anim-fade, .anim-toast { animation: none; }
+}
