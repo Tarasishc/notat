@@ -10,6 +10,7 @@ import { SellSheet } from './sheets/Sell'
 import { useSpot } from './data/model'
 import { TabBar } from './ui/TabBar'
 import { Toast } from './ui/kit'
+import { InstallHint, UpdatePill } from './pwa'
 
 function Screen() {
   const { tab, view } = useApp()
@@ -55,7 +56,9 @@ function Shell() {
       >
         <Screen />
       </main>
+      {!sheet && <InstallHint />}
       {!sheet && <TabBar onPlus={onPlus} />}
+      <UpdatePill />
       <Sheets />
       <Toast message={toastMsg} />
     </>
