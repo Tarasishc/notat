@@ -50,9 +50,10 @@ function PlanForm({ initial }: { initial: UserPlan }) {
   const progress = budgetN && budgetN > 0 ? Math.min(100, (invested / budgetN) * 100) : 0
 
   const submitRule = async () => {
-    if (!newRule.trim()) return
-    await addRule(newRule)
-    setNewRule('')
+    const text = newRule.trim()
+    if (!text) return
+    setNewRule('') // очищаємо одразу, щоб не стерти наступне правило, яке вже почали вводити
+    await addRule(text)
   }
 
   const onImport = async (file: File | undefined) => {
@@ -99,7 +100,7 @@ function PlanForm({ initial }: { initial: UserPlan }) {
           <>
             <div className="h-1 rounded-full bg-white/10 mt-2 overflow-hidden" role="progressbar"
               aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100} aria-label="Використано бюджету">
-              <div className={`h-full rounded-full ${over ? 'bg-down' : 'bg-accent'}`} style={{ width: `${progress}%` }} />
+              <div className={`h-full rounded-full transition-[width,background-color] duration-500 ease-out ${over ? 'bg-down' : 'bg-accent'}`} style={{ width: `${progress}%` }} />
             </div>
             <p className={`text-tiny mt-2 ${over ? 'text-down' : 'text-muted'}`}>
               {over ? `Перевищено на ${fmtUsd(invested - budgetN)}` : `Лишилось ${fmtUsd(budgetN - invested)}`}

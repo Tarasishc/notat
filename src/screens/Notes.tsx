@@ -36,7 +36,9 @@ export function Notes() {
           { value: 'plan', label: 'Мій план' },
         ]}
       />
-      {notesSeg === 'plan' ? <PlanScreen /> : notes && <NoteCoins groups={groups} />}
+      <div key={notesSeg} className="anim-screen">
+        {notesSeg === 'plan' ? <PlanScreen /> : notes && <NoteCoins groups={groups} />}
+      </div>
     </div>
   )
 }

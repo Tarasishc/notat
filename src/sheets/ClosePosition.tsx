@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useApp } from '../state'
 import { fmtPct, fmtUsdSigned, priceInput } from '../core/format'
 import { futuresPnl, pnlToMarginPct } from '../core/futures'
@@ -16,6 +16,9 @@ export function ClosePositionSheet({ positionId }: { positionId: string }) {
   const [fees, setFees] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+
+  // Помилка зникає, щойно користувач щось виправив
+  useEffect(() => setError(''), [exit, fees])
 
   if (!p) return null
   const { pos } = p

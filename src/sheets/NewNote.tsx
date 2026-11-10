@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useApp } from '../state'
 import { fmtPct, priceInput } from '../core/format'
 import { markDistance } from '../core/marks'
@@ -21,6 +21,9 @@ export function NewNoteSheet({ initialSymbol }: { initialSymbol?: string }) {
   const [level, setLevel] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+
+  // Помилка зникає, щойно користувач щось виправив
+  useEffect(() => setError(''), [symbol, text, level])
 
   // Швидкі кнопки: спершу монети з нотатками (свіжіші перші), потім типові; до 5 штук.
   const recent = [...(notes ?? [])].sort((a, b) => (a.updated_at < b.updated_at ? 1 : -1)).map((n) => n.symbol)

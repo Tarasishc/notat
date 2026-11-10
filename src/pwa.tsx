@@ -41,7 +41,7 @@ export function InstallHint() {
   return (
     <div
       role="note"
-      className="fixed z-30 left-1/2 -translate-x-1/2 w-[calc(100%-30px)] max-w-[490px] bg-card border border-line rounded-card px-4 py-3 flex items-center gap-3 shadow-[0_8px_30px_rgba(0,0,0,0.5)]"
+      className="anim-bar fixed z-30 left-1/2 w-[calc(100%-30px)] max-w-[490px] bg-card border border-line rounded-card px-4 py-3 flex items-center gap-3 shadow-[0_8px_30px_rgba(0,0,0,0.5)]"
       style={{ bottom: 'calc(env(safe-area-inset-bottom) + 97px)' }}
     >
       <p className="flex-1 text-cap text-text2 leading-[18px]">

@@ -35,7 +35,7 @@ function TabButton({ id, label, children }: { id: Tab; label: string; children: 
       type="button"
       onClick={() => setTab(id)}
       aria-current={on ? 'page' : undefined}
-      className={`flex-1 h-full flex flex-col items-center justify-center gap-1 text-tiny font-medium ${on ? 'text-text' : 'text-muted'}`}
+      className={`flex-1 h-full flex flex-col items-center justify-center gap-1 text-tiny font-medium transition-colors duration-200 ${on ? 'text-text' : 'text-muted'}`}
     >
       {children}
       {label}
@@ -47,7 +47,7 @@ export function TabBar({ onPlus }: { onPlus: () => void }) {
   return (
     <nav
       aria-label="Головна навігація"
-      className="fixed z-30 left-1/2 -translate-x-1/2 w-[calc(100%-30px)] max-w-[490px] h-[70px] bg-bar border border-bar-line rounded-bar flex items-center px-2 shadow-[0_8px_30px_rgba(0,0,0,0.5)]"
+      className="anim-bar fixed z-30 left-1/2 w-[calc(100%-30px)] max-w-[490px] h-[70px] bg-bar border border-bar-line rounded-bar flex items-center px-2 shadow-[0_8px_30px_rgba(0,0,0,0.5)]"
       style={{ bottom: 'calc(env(safe-area-inset-bottom) + 15px)' }}
     >
       <TabButton id="portfolio" label="Портфель"><WalletIcon /></TabButton>
@@ -55,7 +55,7 @@ export function TabBar({ onPlus }: { onPlus: () => void }) {
         type="button"
         aria-label="Додати"
         onClick={onPlus}
-        className="mx-3 h-[52px] w-[52px] shrink-0 rounded-[17px] bg-accent text-on-accent flex items-center justify-center active:opacity-80"
+        className="mx-3 h-[52px] w-[52px] shrink-0 rounded-[17px] bg-accent text-on-accent flex items-center justify-center press"
       >
         <PlusIcon />
       </button>

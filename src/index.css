@@ -12,7 +12,13 @@
     overscroll-behavior-y: none;
     margin: 0;
   }
-  button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; text-align: center; }
+  /* Плавний відгук на натискання для всіх кнопок */
+  button {
+    transition: transform 0.16s ease-out, opacity 0.16s ease-out, background-color 0.2s ease-out,
+      border-color 0.2s ease-out, color 0.2s ease-out;
+  }
+  input, textarea { transition: border-color 0.2s ease-out; }
   input, textarea { font-variant-numeric: tabular-nums; }
   input[type='date'] { -webkit-appearance: none; appearance: none; }
   :focus-visible { outline: 2px solid #8EA6FF; outline-offset: 2px; }
@@ -25,11 +31,14 @@
     @apply block w-full min-h-[50px] bg-field border border-field-line rounded-field px-3.5 text-[17px] text-text placeholder:text-muted/70;
   }
   .input:focus { @apply border-accent outline-none; }
-  .btn { @apply min-h-[54px] w-full rounded-btn text-[16px] font-semibold px-4 active:opacity-80 disabled:opacity-40; }
+  .btn { @apply min-h-[54px] w-full rounded-btn text-[16px] leading-5 font-semibold px-4 flex items-center justify-center text-center disabled:opacity-40; }
+  .btn:active:not(:disabled), .press:active { transform: scale(0.97); opacity: 0.9; }
+  button.card:active { transform: scale(0.985); }
   .btn-primary { @apply btn bg-accent text-on-accent; }
   .btn-secondary { @apply btn bg-card border border-line text-text; }
   .btn-danger { @apply btn bg-down/15 text-down; }
-  .chip { @apply min-h-[44px] px-4 rounded-full border border-field-line text-text2 text-body font-medium active:opacity-70; }
+  .chip { @apply min-h-[44px] px-4 rounded-full border border-field-line text-text2 text-body font-medium inline-flex items-center justify-center; }
+  .chip:active { transform: scale(0.95); }
   .chip-on { @apply border-accent text-accent bg-accent/10; }
   .link { @apply min-h-[44px] px-1 text-accent text-cap font-medium active:opacity-70; }
   .badge { @apply inline-flex items-center rounded-full px-2.5 py-1 text-tiny font-medium whitespace-nowrap; }
@@ -39,12 +48,41 @@
   .section { @apply text-cap text-muted font-medium mt-6 mb-2.5 px-1; }
 }
 
+/* Фон: «дощ» із символів монет. Приглушений, щоб текст лишався читабельним. */
+.app-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: url('./assets/bg-rain.webp');
+  background-repeat: repeat-y;
+  background-position: top center;
+  background-size: 100% auto;
+  opacity: 0.2;
+}
+@media (min-width: 640px) { .app-bg { background-size: 640px auto; background-repeat: repeat; } }
+
+.seg-thumb { transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
 @keyframes sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes sheet-down { from { transform: translateY(0); } to { transform: translateY(100%); } }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes screen-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes bar-in { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
 @keyframes toast-in { from { opacity: 0; transform: translate(-50%, -8px); } to { opacity: 1; transform: translate(-50%, 0); } }
-.anim-sheet { animation: sheet-up 0.26s cubic-bezier(0.2, 0.8, 0.2, 1); }
-.anim-fade { animation: fade-in 0.2s ease-out; }
-.anim-toast { animation: toast-in 0.2s ease-out; }
+@keyframes toast-out { from { opacity: 1; transform: translate(-50%, 0); } to { opacity: 0; transform: translate(-50%, -8px); } }
+.anim-sheet { animation: sheet-up 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.anim-sheet-out { animation: sheet-down 0.22s cubic-bezier(0.4, 0, 1, 1) forwards; }
+.anim-fade { animation: fade-in 0.22s ease-out; }
+.anim-fade-out { animation: fade-out 0.22s ease-in forwards; }
+.anim-screen { animation: screen-in 0.26s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.anim-bar { transform: translateX(-50%); animation: bar-in 0.26s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.anim-toast { transform: translateX(-50%); animation: toast-in 0.22s ease-out; }
+.anim-toast-out { transform: translateX(-50%); animation: toast-out 0.22s ease-in forwards; }
 @media (prefers-reduced-motion: reduce) {
-  .anim-sheet, .anim-fade, .anim-toast { animation: none; }
+  .anim-sheet, .anim-sheet-out, .anim-fade, .anim-fade-out, .anim-screen, .anim-bar, .anim-toast, .anim-toast-out {
+    animation-duration: 0.01ms;
+  }
+  button, .seg-thumb { transition: none; }
 }

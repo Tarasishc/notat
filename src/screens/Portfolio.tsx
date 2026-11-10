@@ -53,7 +53,9 @@ export function Portfolio() {
           { value: 'futures', label: `Ф'ючі · ${fut.open.length}` },
         ]}
       />
-      {portfolioSeg === 'spot' ? <SpotList /> : <FuturesList />}
+      <div key={portfolioSeg} className="anim-screen">
+        {portfolioSeg === 'spot' ? <SpotList /> : <FuturesList />}
+      </div>
     </div>
   )
 }

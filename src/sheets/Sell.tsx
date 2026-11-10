@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useApp } from '../state'
 import { today } from '../core/dates'
 import { fmtPrice, fmtQty, fmtUsdSigned, priceInput } from '../core/format'
@@ -20,6 +20,9 @@ export function SellSheet({ coinId }: { coinId: string }) {
   const [date, setDate] = useState(today())
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+
+  // Помилка зникає, щойно користувач щось виправив
+  useEffect(() => setError(''), [price, usd])
 
   if (!c) return null
   const { coin, stats } = c

@@ -30,7 +30,7 @@ function Sheets() {
 }
 
 function Shell() {
-  const { tab, view, sheet, openSheet, toastMsg, portfolioSeg } = useApp()
+  const { tab, view, sheet, openSheet, toastMsg, toastVisible, portfolioSeg } = useApp()
   const spot = useSpot()
 
   // Плюс контекстний: у Нотатках — нова нотатка, у Портфелі — нова угода поточного розділу.
@@ -47,20 +47,24 @@ function Shell() {
 
   return (
     <>
+      <div className="app-bg" aria-hidden />
       <main
-        className="mx-auto w-full max-w-[520px] px-4"
+        className="relative mx-auto w-full max-w-[520px] px-4"
         style={{
           paddingTop: 'calc(env(safe-area-inset-top) + 14px)',
           paddingBottom: 'calc(env(safe-area-inset-bottom) + 112px)',
         }}
       >
-        <Screen />
+        {/* key перезапускає анімацію появи при зміні екрана */}
+        <div key={`${tab}:${view.name}`} className="anim-screen">
+          <Screen />
+        </div>
       </main>
       {!sheet && <InstallHint />}
       {!sheet && <TabBar onPlus={onPlus} />}
       <UpdatePill />
       <Sheets />
-      <Toast message={toastMsg} />
+      <Toast message={toastMsg} visible={toastVisible} />
     </>
   )
 }

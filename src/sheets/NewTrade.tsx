@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useApp, type PortfolioSeg } from '../state'
 import { currentMonth, today } from '../core/dates'
 import { fmtPrice, fmtQty, fmtUsd, fmtUsdSigned, priceInput } from '../core/format'
@@ -47,6 +47,9 @@ function TradeForm({ initialType, initialSymbol, preset }: Props & { preset?: Sp
   const [note, setNote] = useState(preset?.note ?? '')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+
+  // Помилка зникає, щойно користувач щось виправив
+  useEffect(() => setError(''), [type, symbol, entry, amount, leverage, customLev])
 
   const isSpot = type === 'spot'
   const sym = normSymbol(symbol)
@@ -169,11 +172,11 @@ function TradeForm({ initialType, initialSymbol, preset }: Props & { preset?: Sp
       {!isSpot && (
         <div>
           <div className="label">Плече</div>
-          <div className="flex gap-2 flex-wrap" role="group" aria-label="Плече">
+          <div className="flex gap-1.5 flex-wrap" role="group" aria-label="Плече">
             {LEVERAGES.map((l) => (
               <button key={l} type="button" aria-pressed={!customLev && leverage === l}
                 onClick={() => { setLeverage(l); setCustomLev('') }}
-                className={`chip ${!customLev && leverage === l ? 'chip-on' : ''}`}>
+                className={`chip !px-3 min-w-[46px] ${!customLev && leverage === l ? 'chip-on' : ''}`}>
                 {l}×
               </button>
             ))}
@@ -183,7 +186,7 @@ function TradeForm({ initialType, initialSymbol, preset }: Props & { preset?: Sp
               onChange={(e) => setCustomLev(e.target.value)}
               inputMode="decimal"
               placeholder="інше"
-              className={`input !w-[84px] !min-h-[44px] !rounded-full text-center ${customLev ? '!border-accent' : ''}`}
+              className={`input !w-[76px] !min-h-[44px] !rounded-full !px-2 text-center ${customLev ? '!border-accent' : ''}`}
             />
           </div>
         </div>
@@ -200,7 +203,7 @@ function TradeForm({ initialType, initialSymbol, preset }: Props & { preset?: Sp
           + Нотатка і план
         </button>
       ) : (
-        <div className="rounded-card border border-line p-3.5 space-y-3.5">
+        <div className="anim-screen rounded-card border border-line p-3.5 space-y-3.5">
           <div className="grid grid-cols-2 gap-2.5">
             <div>
               <Field label="Тейк, $" value={tp} onChange={setTp} decimal placeholder="необов'язково" />
