@@ -37,18 +37,28 @@ export function SpotCoinScreen({ id }: { id: string }) {
       <header className="mt-1 mb-4">
         <h1 className="text-screen">{coin.symbol}</h1>
         <p className="text-body text-text2 mt-1">
-          {price != null ? `зараз ${fmtPrice(price)}` : 'живої ціни немає — рахую за середньою'}
+          {price != null ? `зараз ${fmtPrice(price)}` : `${fmtQty(stats.qty)} ${coin.symbol}`}
         </p>
       </header>
 
       <section className="card">
-        <div className="text-cap text-muted">Результат</div>
-        <div className={`text-amount mt-1 ${tone(stats.pnl)}`}>{fmtUsdSigned(stats.pnl ?? 0)}</div>
-        <div className={`text-body font-medium mt-0.5 ${tone(stats.pnl)}`}>
-          {fmtPct(stats.pnlPct ?? 0)} · вартує {fmtUsd(stats.value ?? stats.invested)}
-        </div>
+        {stats.pnl != null && stats.value != null ? (
+          <>
+            <div className="text-cap text-muted">Результат</div>
+            <div className={`text-amount mt-1 ${tone(stats.pnl)}`}>{fmtUsdSigned(stats.pnl)}</div>
+            <div className={`text-body font-medium mt-0.5 ${tone(stats.pnl)}`}>
+              {fmtPct(stats.pnlPct ?? 0)} · вартує {fmtUsd(stats.value)}
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="text-cap text-muted">Середня точка входу</div>
+            <div className="text-amount mt-1 text-accent">{fmtPrice(stats.avg)}</div>
+            <div className="text-cap text-muted mt-1">Результат з'явиться, коли підключимо живі ціни.</div>
+          </>
+        )}
         <div className="grid grid-cols-2 gap-x-3 gap-y-4 mt-4 pt-4 border-t border-line">
-          <Stat label="Середня ціна" value={fmtPrice(stats.avg)} className="text-accent" />
+          {stats.pnl != null && <Stat label="Середня ціна" value={fmtPrice(stats.avg)} className="text-accent" />}
           <Stat label="Вкладено" value={fmtUsd(stats.invested)} />
           <Stat label="Монет" value={fmtQty(stats.qty)} />
           <Stat label="Зафіксовано" value={fmtUsdSigned(stats.realized)} className={tone(stats.realized)} />

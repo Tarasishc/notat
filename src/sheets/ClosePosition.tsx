@@ -22,7 +22,7 @@ export function ClosePositionSheet({ positionId }: { positionId: string }) {
 
   if (!p) return null
   const { pos } = p
-  const live = p.priceKnown ? p.price : null
+  const live = p.price
   const exitN = parsePositive(exit)
   const feesN = fees.trim() ? parseNum(fees) : 0
   const pnl = exitN && feesN != null ? futuresPnl({ ...pos, fees: feesN }, exitN) : null

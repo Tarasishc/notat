@@ -11,7 +11,7 @@ export type CoinModel = {
   trades: SpotTrade[]
   /** Жива ціна або null, якщо монети немає в жодному джерелі. */
   price: number | null
-  /** Статистика; якщо живої ціни немає — рахуємо за середньою (результат 0). */
+  /** Статистика; без живої ціни value, pnl і pnlPct дорівнюють null. */
   stats: SpotStats
 }
 
@@ -24,21 +24,25 @@ export function useSpot() {
     const all: CoinModel[] = (coins ?? []).map((coin) => {
       const own = (trades ?? []).filter((t) => t.coin_id === coin.id)
       const price = prices.get(coin.symbol)
-      let stats = spotStats(own, price)
-      if (price == null) stats = spotStats(own, stats.avg || null)
+      const stats = spotStats(own, price)
       return { coin, trades: own, price, stats }
     })
     const held = all
       .filter((c) => c.stats.qty > 0)
-      .sort((a, b) => (b.stats.value ?? 0) - (a.stats.value ?? 0))
+      .sort((a, b) => (b.stats.value ?? b.stats.invested) - (a.stats.value ?? a.stats.invested))
     const invested = held.reduce((s, c) => s + c.stats.invested, 0)
-    const value = held.reduce((s, c) => s + (c.stats.value ?? c.stats.invested), 0)
     const realized = all.reduce((s, c) => s + c.stats.realized, 0)
-    const pnl = value - invested
+    // Результат рахуємо лише по монетах із живою ціною; решта входить у суму за вкладеним.
+    const priced = held.filter((c) => c.stats.pnl != null)
+    const pricedInvested = priced.reduce((s, c) => s + c.stats.invested, 0)
+    const pnl = priced.length ? priced.reduce((s, c) => s + (c.stats.pnl as number), 0) : null
+    const value = invested + (pnl ?? 0)
     return {
       ready: coins !== undefined && trades !== undefined,
       all, held, invested, value, realized, pnl,
-      pnlPct: invested > 0 ? (pnl / invested) * 100 : null,
+      pnlPct: pnl != null && pricedInvested > 0 ? (pnl / pricedInvested) * 100 : null,
+      /** Скільки монет без живої ціни. */
+      unpriced: held.length - priced.length,
       allTrades: trades ?? [],
     }
   }, [coins, trades, prices.prices])
@@ -47,11 +51,12 @@ export function useSpot() {
 export type PositionModel = {
   pos: FuturesPosition
   open: boolean
-  /** Ціна для розрахунку: вихід (закрита), жива, або вхід, якщо живої немає. */
-  price: number
+  /** Ціна для розрахунку: вихід (закрита) або жива; null — живої ціни немає. */
+  price: number | null
   priceKnown: boolean
-  pnl: number
-  pnlPct: number
+  /** null — результат невідомий, бо немає живої ціни. */
+  pnl: number | null
+  pnlPct: number | null
 }
 
 export function useFutures() {
@@ -62,9 +67,12 @@ export function useFutures() {
     const all: PositionModel[] = (positions ?? []).map((pos) => {
       const open = pos.exit == null
       const live = prices.get(pos.pair)
-      const price = open ? (live ?? pos.entry) : (pos.exit as number)
-      const pnl = futuresPnl(pos, price)
-      return { pos, open, price, priceKnown: !open || live != null, pnl, pnlPct: pnlToMarginPct(pnl, pos.margin) }
+      const price = open ? live : (pos.exit as number)
+      const pnl = price != null ? futuresPnl(pos, price) : null
+      return {
+        pos, open, price, priceKnown: price != null, pnl,
+        pnlPct: pnl != null ? pnlToMarginPct(pnl, pos.margin) : null,
+      }
     })
     const open = all.filter((p) => p.open).sort((a, b) => (a.pos.updated_at < b.pos.updated_at ? 1 : -1))
     const closed = all
@@ -73,9 +81,9 @@ export function useFutures() {
     return {
       ready: positions !== undefined,
       all, open, closed,
-      openPnl: open.reduce((s, p) => s + p.pnl, 0),
+      openPnl: open.some((p) => p.pnl != null) ? open.reduce((s, p) => s + (p.pnl ?? 0), 0) : null,
       openMargin: open.reduce((s, p) => s + p.pos.margin, 0),
-      closedPnl: closed.reduce((s, p) => s + p.pnl, 0),
+      closedPnl: closed.reduce((s, p) => s + (p.pnl ?? 0), 0),
     }
   }, [positions, prices.prices])
 }

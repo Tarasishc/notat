@@ -73,9 +73,7 @@ function NoteCoins({ groups }: { groups: { symbol: string; list: CoinNote[] }[] 
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <div className="text-[17px] font-semibold">{symbol}</div>
-                      <div className="text-cap text-muted mt-0.5">
-                        {price != null ? `зараз ${fmtPrice(price)}` : 'ціни немає'}
-                      </div>
+                      {price != null && <div className="text-cap text-muted mt-0.5">зараз {fmtPrice(price)}</div>}
                     </div>
                     {marked && <MarkBadge level={marked.price_level!} price={price} />}
                   </div>
@@ -113,9 +111,7 @@ export function NoteCoinScreen({ symbol }: { symbol: string }) {
       <BackButton label="Нотатки" onClick={back} />
       <header className="mt-1 mb-4">
         <h1 className="text-screen">{symbol}</h1>
-        <p className="text-body text-text2 mt-1">
-          {price != null ? `зараз ${fmtPrice(price)}` : 'живої ціни немає'}
-        </p>
+        {price != null && <p className="text-body text-text2 mt-1">зараз {fmtPrice(price)}</p>}
       </header>
 
       <ul className="space-y-2.5">

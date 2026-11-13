@@ -1,6 +1,6 @@
 import { useApp } from '../state'
 import { fmtDate } from '../core/dates'
-import { fmtPct, fmtPrice, fmtUsd, fmtUsdSigned, plural } from '../core/format'
+import { fmtPct, fmtPrice, fmtQty, fmtUsd, fmtUsdSigned, plural } from '../core/format'
 import { fmtWinrate, futuresTakeDistancePct, winrate } from '../core/futures'
 import { spotTakeDistancePct } from '../core/spot'
 import { useFutures, useSpot, type CoinModel, type PositionModel } from '../data/model'
@@ -9,8 +9,10 @@ import { Empty, Segmented, Stat, tone } from '../ui/kit'
 
 export function PriceBadge() {
   const { status } = usePrices()
+  // Поки живі ціни не підключено, бейдж не показуємо взагалі.
+  if (status === 'none') return null
   const live = status === 'live'
-  const text = live ? 'ціни наживо' : status === 'offline' ? 'офлайн' : 'тестові ціни'
+  const text = live ? 'ціни наживо' : 'офлайн'
   return (
     <span className="inline-flex items-center gap-1.5 text-tiny text-text2">
       <span className={`h-2 w-2 rounded-full ${live ? 'bg-up' : 'bg-muted'}`} aria-hidden />
@@ -66,11 +68,15 @@ function SpotList() {
   return (
     <div className="mt-4">
       <section className="card">
-        <div className="text-cap text-muted">Портфель зараз</div>
+        <div className="text-cap text-muted">{s.pnl != null ? 'Портфель зараз' : 'Вкладено в монети'}</div>
         <div className="text-amount mt-1">{fmtUsd(s.value)}</div>
-        <div className={`text-body font-medium mt-0.5 ${tone(s.pnl)}`}>
-          {fmtUsdSigned(s.pnl)}{s.pnlPct != null && ` · ${fmtPct(s.pnlPct)}`}
-        </div>
+        {s.pnl != null ? (
+          <div className={`text-body font-medium mt-0.5 ${tone(s.pnl)}`}>
+            {fmtUsdSigned(s.pnl)}{s.pnlPct != null && ` · ${fmtPct(s.pnlPct)}`}
+          </div>
+        ) : (
+          <div className="text-cap text-muted mt-1">Результат з'явиться, коли підключимо живі ціни.</div>
+        )}
         <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-line">
           <Stat label="Вкладено" value={fmtUsd(s.invested)} />
           <Stat label="Зафіксовано" value={fmtUsdSigned(s.realized)} className={tone(s.realized)} />
@@ -107,13 +113,18 @@ function CoinCard({ c }: { c: CoinModel }) {
               <div className={`text-cap mt-0.5 ${tone(stats.pnl)}`}>{fmtPct(stats.pnlPct ?? 0)}</div>
             </>
           ) : (
-            <div className="text-cap text-muted">ціни немає</div>
+            <>
+              <div className="text-[17px] font-semibold">{fmtUsd(stats.invested)}</div>
+              <div className="text-cap text-muted mt-0.5">вкладено</div>
+            </>
           )}
         </div>
       </div>
       <div className="flex items-center justify-between gap-3 mt-3">
         <div className="text-cap text-text2">
-          {fmtUsd(stats.invested)} → {fmtUsd(stats.value ?? stats.invested)}
+          {stats.value != null
+            ? `${fmtUsd(stats.invested)} → ${fmtUsd(stats.value)}`
+            : `${fmtQty(stats.qty)} ${coin.symbol}`}
         </div>
         {coin.tp != null && price == null
           ? <span className="badge-neutral">тейк {fmtPrice(coin.tp)}</span>
@@ -131,13 +142,13 @@ function FuturesList() {
     <div className="mt-4">
       <section className="card">
         <div className="text-cap text-muted">Відкриті позиції зараз</div>
-        <div className={`text-amount mt-1 ${tone(f.openPnl)}`}>{fmtUsdSigned(f.openPnl)}</div>
+        <div className={`text-amount mt-1 ${tone(f.openPnl)}`}>{f.openPnl != null ? fmtUsdSigned(f.openPnl) : n > 0 ? '—' : fmtUsdSigned(0)}</div>
         <div className="text-body text-text2 mt-0.5">
           {n} {plural(n, 'позиція', 'позиції', 'позицій')} · маржа {fmtUsd(f.openMargin)}
         </div>
         <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-line">
           <Stat label="Закриті, разом" value={fmtUsdSigned(f.closedPnl)} className={tone(f.closedPnl)} />
-          <Stat label="Вінрейт" value={fmtWinrate(winrate(f.closed.map((p) => p.pnl)))} />
+          <Stat label="Вінрейт" value={fmtWinrate(winrate(f.closed.map((p) => p.pnl ?? 0)))} />
         </div>
       </section>
 
@@ -165,7 +176,7 @@ function FuturesList() {
 function PositionCard({ p }: { p: PositionModel }) {
   const { setView } = useApp()
   const { pos } = p
-  const distance = pos.tp != null && p.priceKnown ? futuresTakeDistancePct(pos.side, pos.tp, p.price) : null
+  const distance = pos.tp != null && p.price != null ? futuresTakeDistancePct(pos.side, pos.tp, p.price) : null
   return (
     <button type="button" onClick={() => setView({ name: 'position', id: pos.id })} className="card w-full text-left active:opacity-80">
       <div className="flex items-start justify-between gap-3">
@@ -174,15 +185,26 @@ function PositionCard({ p }: { p: PositionModel }) {
           <div className="mt-1.5"><SideBadge side={pos.side} leverage={pos.leverage} /></div>
         </div>
         <div className="text-right">
-          <div className={`text-[17px] font-semibold ${tone(p.pnl)}`}>{fmtUsdSigned(p.pnl)}</div>
-          <div className={`text-cap mt-0.5 ${tone(p.pnl)}`}>{fmtPct(p.pnlPct)} до маржі</div>
+          {p.pnl != null && p.pnlPct != null ? (
+            <>
+              <div className={`text-[17px] font-semibold ${tone(p.pnl)}`}>{fmtUsdSigned(p.pnl)}</div>
+              <div className={`text-cap mt-0.5 ${tone(p.pnl)}`}>{fmtPct(p.pnlPct)} до маржі</div>
+            </>
+          ) : (
+            <>
+              <div className="text-[17px] font-semibold">{fmtUsd(pos.margin)}</div>
+              <div className="text-cap text-muted mt-0.5">маржа</div>
+            </>
+          )}
         </div>
       </div>
       <div className="flex items-center justify-between gap-3 mt-3">
         <div className="text-cap text-text2">
-          {fmtPrice(pos.entry)} → {p.priceKnown ? fmtPrice(p.price) : 'ціни немає'}
+          {p.price != null ? `${fmtPrice(pos.entry)} → ${fmtPrice(p.price)}` : `вхід ${fmtPrice(pos.entry)}`}
         </div>
-        <TakeBadge distance={distance} />
+        {pos.tp != null && p.price == null
+          ? <span className="badge-neutral">тейк {fmtPrice(pos.tp)}</span>
+          : <TakeBadge distance={distance} />}
       </div>
     </button>
   )
@@ -199,12 +221,12 @@ function HistoryRow({ p }: { p: PositionModel }) {
           <SideBadge side={pos.side} leverage={pos.leverage} />
         </div>
         <div className="text-tiny text-muted mt-1">
-          {fmtDate(pos.closed_on ?? pos.opened_on)} · {fmtPrice(pos.entry)} → {fmtPrice(p.price)}
+          {fmtDate(pos.closed_on ?? pos.opened_on)} · {fmtPrice(pos.entry)} → {fmtPrice(pos.exit ?? pos.entry)}
         </div>
       </div>
       <div className="text-right shrink-0">
-        <div className={`text-body font-semibold ${tone(p.pnl)}`}>{fmtUsdSigned(p.pnl)}</div>
-        <div className={`text-tiny mt-0.5 ${tone(p.pnl)}`}>{fmtPct(p.pnlPct)}</div>
+        <div className={`text-body font-semibold ${tone(p.pnl)}`}>{fmtUsdSigned(p.pnl ?? 0)}</div>
+        <div className={`text-tiny mt-0.5 ${tone(p.pnl)}`}>{fmtPct(p.pnlPct ?? 0)}</div>
       </div>
     </button>
   )

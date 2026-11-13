@@ -37,22 +37,21 @@ export function PositionScreen({ id }: { id: string }) {
 
       <section className="card">
         <div className="text-cap text-muted">{p.open ? 'Результат зараз' : 'Результат угоди'}</div>
-        <div className={`text-amount mt-1 ${tone(p.pnl)}`}>{fmtUsdSigned(p.pnl)}</div>
-        <div className={`text-body font-medium mt-0.5 ${tone(p.pnl)}`}>{fmtPct(p.pnlPct)} до маржі</div>
+        <div className={`text-amount mt-1 ${tone(p.pnl)}`}>{p.pnl != null ? fmtUsdSigned(p.pnl) : '—'}</div>
+        {p.pnl != null && p.pnlPct != null
+          ? <div className={`text-body font-medium mt-0.5 ${tone(p.pnl)}`}>{fmtPct(p.pnlPct)} до маржі</div>
+          : <div className="text-cap text-muted mt-1">Результат з'явиться, коли підключимо живі ціни.</div>}
         <div className="grid grid-cols-2 gap-x-3 gap-y-4 mt-4 pt-4 border-t border-line">
           <Stat label="Вхід" value={fmtPrice(pos.entry)} />
           <Stat
             label={p.open ? 'Зараз' : 'Вихід'}
-            value={p.priceKnown ? fmtPrice(p.price) : 'ціни немає'}
+            value={p.price != null ? fmtPrice(p.price) : '—'}
           />
           <Stat label="Маржа" value={fmtUsd(pos.margin)} />
           <Stat label="Позиція" value={fmtUsd(positionSize(pos.margin, pos.leverage))} />
           {p.open && <Stat label="Ліквідація, приблизно" value={fmtPrice(liquidationPrice(pos.side, pos.entry, pos.leverage))} />}
           {!p.open && pos.fees > 0 && <Stat label="Комісія" value={fmtUsd(pos.fees)} />}
         </div>
-        {p.open && !p.priceKnown && (
-          <p className="text-tiny text-muted mt-3">Живої ціни немає — результат рахую від точки входу.</p>
-        )}
       </section>
 
       <section className="card mt-2.5">

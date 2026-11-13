@@ -1,24 +1,14 @@
 /**
- * Сховище цін. На етапі 1 ціни статичні (тестові);
- * на етапі 3 тут з'явиться запит до Edge Function `prices` — решта застосунку не зміниться.
+ * Сховище цін. Поки живі ціни не підключено, воно порожнє: застосунок рахує лише
+ * середню, вкладене й зафіксоване, без вигаданих результатів.
+ * На етапі 3 тут з'явиться запит до Edge Function `prices` — решта застосунку не зміниться.
  */
 import { useSyncExternalStore } from 'react'
 
-export type PriceStatus = 'static' | 'live' | 'offline'
+export type PriceStatus = 'none' | 'live' | 'offline'
 export type PriceState = { prices: Record<string, number>; status: PriceStatus }
 
-const STATIC_PRICES: Record<string, number> = {
-  BTC: 100516,
-  ETH: 3405.57,
-  SOL: 182.4,
-  TON: 5.12,
-  DOGE: 0.1834,
-  BNB: 612.3,
-  XRP: 2.31,
-  ADA: 0.6412,
-}
-
-let state: PriceState = { prices: STATIC_PRICES, status: 'static' }
+let state: PriceState = { prices: {}, status: 'none' }
 const listeners = new Set<() => void>()
 
 export function setPriceState(next: PriceState) {
